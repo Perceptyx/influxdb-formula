@@ -5,6 +5,8 @@ default:
   pkgs:
   - influxdb
   service: influxdb
+  service_user: influxdb
+  service_group: influxdb
   reporting_disabled: true
   http:
     enabled: true
