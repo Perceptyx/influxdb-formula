@@ -22,6 +22,27 @@ influxdb_default:
   - require:
     - pkg: influxdb_packages
 
+{{server.data.dir}}:
+  file.directory:
+    - makedirs: True
+    - mode: 755
+    - user: {{ server.service_user }}
+    - group: {{ server.service_group }}
+
+{{server.data.wal_dir}}:
+  file.directory:
+    - makedirs: True
+    - mode: 755
+    - user: {{ server.service_user }}
+    - group: {{ server.service_group }}
+
+{{server.meta.dir}}:
+  file.directory:
+    - makedirs: True
+    - mode: 755
+    - user: {{ server.service_user }}
+    - group: {{ server.service_group }}
+
 influxdb_service:
   service.running:
   - enable: true
