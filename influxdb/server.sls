@@ -80,7 +80,7 @@ influxdb_service:
   {% set admin_url = "http://{}:{}/query?u={}&p={}".format(server.http.bind.address, server.http.bind.port, server.admin.user.name, server.admin.user.password) %}
 influxdb_create_admin:
   cmd.run:
-  - name: curl -f -S -POST "{{ url_for_query }}" {{ query_create_admin }} || curl -f -S -POST "{{ admin_url }}" {{ query_create_admin }}
+  - name: curl -f -S -GET "{{ url_for_query }}" {{ query_create_admin }} || curl -f -S -GET "{{ admin_url }}" {{ query_create_admin }}
   - require:
     - service: influxdb_service
   {% set url_for_query = admin_url %}
@@ -98,7 +98,7 @@ influxdb_create_admin:
       {%- endif %}
 influxdb_create_user_{{user.name}}:
   cmd.run:
-    - name: curl -f -S -POST "{{ url_for_query }}" {{ query_create_user }}
+    - name: curl -f -S -GET "{{ url_for_query }}" {{ query_create_user }}
     - require:
       - cmd: influxdb_create_admin
     # TODO: manage user deletion
@@ -111,7 +111,7 @@ influxdb_create_user_{{user.name}}:
     {% set query_create_db = "--data-urlencode \"q=CREATE DATABASE {}\"".format(db.name) %}
 influxdb_create_db_{{db.name}}:
   cmd.run:
-    - name: curl -f -S -POST "{{ url_for_query }}" {{ query_create_db }}
+    - name: curl -f -S -GET "{{ url_for_query }}" {{ query_create_db }}
     {%- if admin_created %}
     - require:
       - cmd: influxdb_create_admin
@@ -138,7 +138,7 @@ influxdb_create_db_{{db.name}}:
 influxdb_retention_policy_{{db.name}}_{{ rp_name }}:
   cmd.run:
 
-    - name: curl -s -S -POST "{{ url_for_query }}" --data-urlencode "q=CREATE {{ query_retention_policy }}"|grep -v "policy already exists" || curl -s -S -POST "{{ url_for_query }}" --data-urlencode "q=ALTER {{ query_retention_policy }}"
+    - name: curl -s -S -GET "{{ url_for_query }}" --data-urlencode "q=CREATE {{ query_retention_policy }}"|grep -v "policy already exists" || curl -s -S -GET "{{ url_for_query }}" --data-urlencode "q=ALTER {{ query_retention_policy }}"
     - require:
       - cmd: influxdb_create_db_{{db.name}}
     {%- endfor %}
@@ -152,7 +152,7 @@ influxdb_retention_policy_{{db.name}}_{{ rp_name }}:
     {% set query_grant_user_access = "--data-urlencode \"q=GRANT {} ON {} TO {}\"".format(grant.privilege, grant.database, grant.user) %}
 influxdb_grant_{{grant_name}}:
   cmd.run:
-    - name: curl -f -S -POST "{{ url_for_query }}" {{ query_grant_user_access }}
+    - name: curl -f -S -GET "{{ url_for_query }}" {{ query_grant_user_access }}
     - require:
       - cmd: influxdb_create_db_{{grant.database}}
       - cmd: influxdb_create_user_{{grant.user}}
